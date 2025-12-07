@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
+import FilterBar from "./components/FilterBar";
 import NoticeBoard from "./pages/NoticeBoard";
 import CreateNotice from "./pages/CreateNotice";
 import { dbInit } from "./utils/db";

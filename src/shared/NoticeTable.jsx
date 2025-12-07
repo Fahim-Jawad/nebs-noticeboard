@@ -1,63 +1,62 @@
-import React, { useState } from "react";
-import { togglePublish } from "../utils/db";
+import React from "react";
 
-export default function NoticeTable({ data, onReload }) {
-  const [loadingId, setLoadingId] = useState(null);
-
-  async function handleToggle(id) {
-    setLoadingId(id);
-    await togglePublish(id);
-    setLoadingId(null);
-    onReload();
+export default function NoticeTable({ data = [], onReload }) {
+  async function toggle(id) {
+    await fetch(`/api/notices/${id}/toggle`, { method: "PATCH" });
+    onReload?.();
   }
 
   return (
-    <table className="notice-table">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Department</th>
-          <th>Status</th>
-          <th style={{ width: "120px" }}>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {(Array.isArray(data) ? data : []).map((n) => (
-          <tr key={n.id}>
-            <td>{n.title}</td>
-            <td>{n.department || "—"}</td>
-
-            <td>
-              <span className={`badge ${n.published ? "published" : "unpublished"}`}>
-                {n.published ? "Published" : "Unpublished"}
-              </span>
-            </td>
-
-            <td>
-              <button
-                className="btn primary"
-                onClick={() => handleToggle(n.id)}
-                disabled={loadingId === n.id}
-              >
-                {loadingId === n.id
-                  ? "..."
-                  : n.published
-                  ? "Unpublish"
-                  : "Publish"}
-              </button>
-            </td>
-          </tr>
-        ))}
-
-        {data.length === 0 && (
+    <div className="card">
+      <table className="notice-table">
+        <thead>
           <tr>
-            <td colSpan="4" style={{ textAlign: "center", padding: "20px" }}>
-              No notices found
-            </td>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Departments</th>
+            <th>Publish Date</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {data.length === 0 && (
+            <tr>
+              <td colSpan="7" style={{ textAlign: "center", padding: 20 }}>
+                No notices found
+              </td>
+            </tr>
+          )}
+          {data.map((n) => (
+            <tr key={n._id || n.id}>
+              <td>{n.title}</td>
+              <td>{n.noticeType}</td>
+              <td>{(n.departments || []).join(", ")}</td>
+              <td>
+                {n.publishDate
+                  ? new Date(n.publishDate).toLocaleDateString()
+                  : "-"}
+              </td>
+              <td>{n.priority}</td>
+              <td>
+                <span
+                  className={`badge ${
+                    n.published ? "published" : "unpublished"
+                  }`}
+                >
+                  {n.published ? "Published" : "Unpublished"}
+                </span>
+              </td>
+              <td>
+                <button className="link" onClick={() => toggle(n._id || n.id)}>
+                  {n.published ? "Unpublish" : "Publish"}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
